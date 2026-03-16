@@ -1,3 +1,7 @@
+# Gestión de tickets
+
+Este proyecto está construido con arquitectura MVC y lógica separada por módulos para mantener escalabilidad y mejor rendimiento. Cada responsabilidad (controladores, servicios, rutas y modelos) se organiza en módulos específicos para que sea más fácil mantener, escalar y optimizar.
+
 To install dependencies:
 ```sh
 bun install
