@@ -6,6 +6,7 @@ const ticketController = new TicketController();
 
 ticketRoutes.get('/', (c) => ticketController.getAll(c));
 ticketRoutes.post('/', (c) => ticketController.createTicket(c));
+ticketRoutes.get('/detail/:ticketId', (c) => ticketController.getById(c));
 ticketRoutes.post('/asignar', (c) => ticketController.asignarTickert(c));
 ticketRoutes.post('/cambiar-estado', (c) => ticketController.cambiarEstadoTicket(c));
 ticketRoutes.post('/add-comment', (c) => ticketController.addComment(c));

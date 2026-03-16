@@ -52,6 +52,40 @@ export class TicketController {
     }
   }
 
+  async getById(context: Context) {
+    try {
+      const userLogin = context.get("user");
+      console.log("Usuario en contexto:", userLogin);
+      const ticketId = Number(context.req.param("ticketId"));
+      if (isNaN(ticketId)) {
+        return context.json(
+          {
+            message: "El parámetro ticketId debe ser un número",
+          },
+          400,
+        );
+      }
+      return context.json(
+        {
+          message: "Detalle del ticket",
+          data: await this.ticketService.getById(ticketId),
+        },
+        200,
+      );
+    } catch (error) {
+      console.error("Error en TicketController.getById:", error);
+      return context.json(
+        {
+          message: "Error al obtener el ticket",
+          error: error instanceof Error ? error.message : String(error),
+        },
+        500,
+      );
+    }
+  }
+
+
+
   async createTicket(context: Context) {
     try {
       const userLogin = context.get("user");

@@ -1,21 +1,81 @@
 import { db } from "../../db";
 import { tickets } from "../../db/schema/tickets.schema";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq,  } from "drizzle-orm";
 import { CreateTicketDto } from "./dto/create-ticket.dto";
-import { title } from "node:process";
 import { ticketStatusHistory } from "../../db/schema/ticket-status.schema";
 import { users } from "../../db/schema/users.schema";
 import { ticketComments } from "../../db/schema/ticket-comments.schema";
+import { alias } from "drizzle-orm/pg-core";
 
 export class TicketService {
   async getAll() {
-    return await db.select().from(tickets).orderBy(desc(tickets.updatedAt));
+    return await db
+      .select({
+        id: tickets.id,
+        title: tickets.title,
+        priority: tickets.priority,
+        category: tickets.category,
+        status: tickets.status,
+        createdBy: tickets.createdBy,
+        assignedTo: tickets.assignedTo,
+        createdAt: tickets.createdAt,
+        updatedAt: tickets.updatedAt,
+        createdByName: users.name,
+        createdByEmail: users.email,
+      })
+      .from(tickets)
+      .innerJoin(users, eq(tickets.createdBy, users.id))
+      .orderBy(desc(tickets.updatedAt));
+  }
+
+  async getById(ticketId: number) {
+    const createdByUser = alias(users, "createdByUser");
+    const assignedToUser = alias(users, "assignedToUser");
+    const ticketsList = await db
+      .select({
+        id: tickets.id,
+        title: tickets.title,
+        description: tickets.description,
+        priority: tickets.priority,
+        category: tickets.category,
+        status: tickets.status,
+        createdBy: tickets.createdBy,
+        assignedTo: tickets.assignedTo,
+        createdAt: tickets.createdAt,
+        updatedAt: tickets.updatedAt,
+
+        createdByName: createdByUser.name,
+        createdByEmail: createdByUser.email,
+
+        assignedToName: assignedToUser.name,
+        assignedToEmail: assignedToUser.email,
+      })
+      .from(tickets)
+      .innerJoin(createdByUser, eq(tickets.createdBy, createdByUser.id))
+      .leftJoin(assignedToUser, eq(tickets.assignedTo, assignedToUser.id))
+      .where(eq(tickets.id, ticketId))
+      .orderBy(desc(tickets.updatedAt));
+    return ticketsList[0] || null;
   }
 
   async getByEmpleadoId(empleadoId: number) {
     return await db
-      .select()
+      .select({
+        id: tickets.id,
+        title: tickets.title,
+        description: tickets.description,
+        priority: tickets.priority,
+        category: tickets.category,
+        status: tickets.status,
+        createdBy: tickets.createdBy,
+        assignedTo: tickets.assignedTo,
+        createdAt: tickets.createdAt,
+        updatedAt: tickets.updatedAt,
+        createdByName: users.name,
+        createdByEmail: users.email,
+      })
       .from(tickets)
+      .innerJoin(users, eq(tickets.createdBy, users.id))
       .where(eq(tickets.createdBy, empleadoId))
       .orderBy(asc(tickets.updatedAt));
   }
@@ -142,6 +202,7 @@ export class TicketService {
       .select()
       .from(tickets)
       .where(eq(tickets.id, ticketId));
+      console.log("Ticket encontrado para cambiar estado:", existingTicket);
 
     if (existingTicket.length === 0) {
       throw new Error("No existe un ticket con el ID proporcionado");
